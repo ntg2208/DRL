@@ -8,110 +8,76 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 import yfinance as yf 
-
-
-# %%
-file_wiki = 'sp500_wiki.csv'
-df_wiki = pd.read_csv(file_wiki)
-# Symbol	Security	GICS Sector	GICS Sub-Industry	Headquarters Location	Date first added	CIK	Founded
-
-
-# %%
-print(df_wiki.head())
-print(df_wiki['GICS Sector'].unique())
-
-
-# %%
-df_wiki[df_wiki['GICS Sector'] == 'Communication Services']['Symbol'].to_numpy()
-
-
-# %%
-stocks = df_wiki['Symbol'].to_numpy()
-# print(stocks)
-
-
-# %%
-for stock in stocks:
-    data = yf.download(stock, start='2001-01-01', end='2021-05-25')
-    if len(data) > 0:
-        data.to_csv(f'csv_data/{stock}.csv')
-    
-print('** Done **')
-
-
-# %%
-# plt.locator_params(axis = 'x',tight=True, nbins=4)
-# def visualize()
-for stock in tqdm(stocks):
-    if os.path.isfile(f'csv_data/{stock}.csv'):
-        df = pd.read_csv(f'csv_data/{stock}.csv')
-        plt.figure(figsize=(9, 5))
-        plt.grid()
-        plt.xticks(rotation=45)
-        plt.plot(pd.to_datetime(df['Date']), df['Close'])
-        # fig.autofmt_xdate()
-        plt.title(f'{stock}')
-        plt.xlabel("Date")
-        plt.ylabel("Close")
-        plt.savefig(f'plot_csv/{stock}.jpg')
-        plt.close()
-
-print('** Done **')
-
-#%%
-from glob import glob
-
-csvs = glob('csv_data/*.csv')
-out_file = 'csv_info.csv'
-
-names = list()
-starts = list()
-ends = list()
-lens = list()
-
-for file in tqdm(csvs):
-    df = pd.read_csv(file)
-
-    name = file.split('/')[-1][:-4]
-    len_ = len(df)
-    start = df['Date'][0]
-    end = df['Date'][len_ -1]
-
-    starts.append(start)
-    ends.append(end)
-    lens.append(len_)
-    names.append(name)
-
-    # print('\n')
-    # print(start, end)
-df = pd.DataFrame()
-df['Name'] = names
-df['Start'] = starts
-df['End'] = ends
-df['Len'] = lens
-
-df.to_csv(out_file, index=False)
-    
-#%%
-df = pd.read_csv(out_file)
-print(df['Len'].value_counts())
-print(df['Len'].unique())
-# %%
 import statsmodels.tsa.stattools as ts 
-AAPL = pd.read_csv(f'csv_data/AAPL.csv')#['Close'].to_numpy()
-AAP = pd.read_csv(f'csv_data/AAP.csv')#['Close'].to_numpy()
-print(len(AAP), len(AAPL))
-# result=ts.coint(AAPL['Close'][206:], AAP['Close'])
-# print(result)
+
+
+#%%
+with open('examinating.txt', 'r') as f:
+    list_stocks = f.read().split(', ')[:-1]
+
+# %%
+def fix_len():
+    # Fix to len 4000 -> 4000 - len(df): 
+    os.makedirs('processing', exist_ok=True)
+    for i in tqdm(list_stocks):
+        df = pd.read_csv(f'csv_data/{i}.csv')
+        df = df[len(df) - 4000:]
+        df.to_csv(f'processing/{i}.csv')
+
+#%%
+list_stocks = sorted(list_stocks)
+print(list_stocks, len(list_stocks))
+#%%
+maxlen = len(list_stocks)
+# TODO: create 414x414 numpy array, each cell will be a 1 - cointegration value
+# only upper diagonal will have value, lower diagonal will be 0
+prefill = np.zeros([1, maxlen])
+cointegration = np.zeros([maxlen, maxlen])
+
+for idx, i in (enumerate(list_stocks[:1])):
+    df = pd.read_csv(f'processing/{i}.csv').fillna(0)['Close'].to_numpy()
+    coints = list()
+    for j in tqdm(list_stocks[idx+1:]):
+        df2 = pd.read_csv(f'processing/{j}.csv').fillna(0)['Close'].to_numpy()
+        coint = ts.coint(df, df2)[1]
+        # print(coint)
+        coints.append(1-coint)
+        # break
+    row = prefill + np.array(coints)
+    print(row)
+
+    break
+
+
+
+#%%
+# from statsmodels.tsa.vector_ar.vecm import coint_johansen
+AAPL = pd.read_csv(f'csv_data/AAPL.csv')['Close'].to_numpy()
+ABC = pd.read_csv(f'csv_data/ABC.csv')['Close'].to_numpy()
+# print(len(AAP), len(AAPL))
+result = ts.coint(AAPL, ABC)
+# result=coint_johansen(pd.DataFrame([AAPL, ABC]), 0, -1)
+print(result)
+# print(AAPL[-1], ABC[-1])
+from PIL import Image
+
+plt.imshow(Image.open(f'plot_csv/AAPL.jpg'))
+plt.show()
+plt.imshow(Image.open(f'plot_csv/ABC.jpg'))
+plt.show()
+
+# %%
+import numpy
+import talib
+
+close = numpy.random.random(100)
+from talib import MA_Type
+
+upper, middle, lower = talib.BBANDS(close, matype=MA_Type.T3)
 
 
 # %%
-
-
-
-# %%
-5094 - 4888
-
+print(middle, lower)
 
 # %%
 
