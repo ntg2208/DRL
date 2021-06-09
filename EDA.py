@@ -28,30 +28,31 @@ def fix_len():
 list_stocks = sorted(list_stocks)
 print(list_stocks, len(list_stocks))
 #%%
-maxlen = len(list_stocks)
-# TODO: create 414x414 numpy array, each cell will be a 1 - cointegration value
-# only upper diagonal will have value, lower diagonal will be 0
-prefill = np.zeros([1, maxlen])
-cointegration = np.zeros([maxlen, maxlen])
-
-for idx, i in (enumerate(list_stocks)):
-    df = pd.read_csv(f'processing/{i}.csv').fillna(0)['Close'].to_numpy()
-    coints = list()
-    for j in tqdm(list_stocks[idx+1:]):
-        df2 = pd.read_csv(f'processing/{j}.csv').fillna(0)['Close'].to_numpy()
-        coint = ts.coint(df, df2)[1]
-        # print(coint)
-        coints.append(1-coint)
-        # break
-    prefill[:, maxlen - len(coints):] = np.expand_dims(np.asarray(coints), axis=0)
-    col = prefill
+def cointegration_test():
+    maxlen = len(list_stocks)
+    # TODO: create 414x414 numpy array, each cell will be a 1 - cointegration value
+    # only upper diagonal will have value, lower diagonal will be 0
     prefill = np.zeros([1, maxlen])
+    cointegration = np.zeros([maxlen, maxlen])
 
-    # print('\n')
-    # print(col)
-    cointegration[idx] = col
+    for idx, i in (enumerate(list_stocks)):
+        df = pd.read_csv(f'processing/{i}.csv').fillna(0)['Close'].to_numpy()
+        coints = list()
+        for j in tqdm(list_stocks[idx+1:]):
+            df2 = pd.read_csv(f'processing/{j}.csv').fillna(0)['Close'].to_numpy()
+            coint = ts.coint(df, df2)[1]
+            # print(coint)
+            coints.append(1-coint)
+            # break
+        prefill[:, maxlen - len(coints):] = np.expand_dims(np.asarray(coints), axis=0)
+        col = prefill
+        prefill = np.zeros([1, maxlen])
 
-    # break
+        # print('\n')
+        # print(col)
+        cointegration[idx] = col
+
+        # break
 
 
 
@@ -64,27 +65,6 @@ cointegration = np.load('cointegration.npy')
 #%%
 def heatmap(data, row_labels, col_labels, ax=None,
             cbar_kw={}, cbarlabel="", **kwargs):
-    """
-    Create a heatmap from a numpy array and two lists of labels.
-
-    Parameters
-    ----------
-    data
-        A 2D numpy array of shape (N, M).
-    row_labels
-        A list or array of length N with the labels for the rows.
-    col_labels
-        A list or array of length M with the labels for the columns.
-    ax
-        A `matplotlib.axes.Axes` instance to which the heatmap is plotted.  If
-        not provided, use current axes or create a new one.  Optional.
-    cbar_kw
-        A dictionary with arguments to `matplotlib.Figure.colorbar`.  Optional.
-    cbarlabel
-        The label for the colorbar.  Optional.
-    **kwargs
-        All other arguments are forwarded to `imshow`.
-    """
 
     if not ax:
         ax = plt.gca()
@@ -128,24 +108,21 @@ from matplotlib.pyplot import figure
 
 figure(figsize=(120, 120), dpi=96)
 
-num = 40
+fig, ax = plt.subplots()
+
+num = 50
 
 im, cbar = heatmap(cointegration[:num, :num], list_stocks[:num], list_stocks[:num], ax=ax,
                    cmap="BuGn")
-plt.savefig('tmp.jpg', dpi=300)
+plt.savefig('coint50.jpg', dpi=300)
 # fig.tight_layout()
 # plt.show()
-
-
+# test = cointegration[9, :] # CMCSA
+# [list_stocks[i] for i in test.argsort()[-10:]]
 #%%
-# from statsmodels.tsa.vector_ar.vecm import coint_johansen
-AAPL = pd.read_csv(f'csv_data/AAPL.csv')['Close'].to_numpy()
-ABC = pd.read_csv(f'csv_data/ABC.csv')['Close'].to_numpy()
-# print(len(AAP), len(AAPL))
-result = ts.coint(AAPL, ABC)
-# result=coint_johansen(pd.DataFrame([AAPL, ABC]), 0, -1)
-print(result)
-# print(AAPL[-1], ABC[-1])
+# Choose CMCSA: ['PG', 'FISV', 'ALL', 'IEX', 'CBRE', 'AMZN', 'BLK', 'CMA', 'HES', 'JCI']
+#%%
+
 from PIL import Image
 
 plt.imshow(Image.open(f'plot_csv/AAPL.jpg'))
