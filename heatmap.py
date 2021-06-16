@@ -120,7 +120,8 @@ plt.savefig('coint50.jpg', dpi=300)
 # test = cointegration[9, :] # CMCSA
 # [list_stocks[i] for i in test.argsort()[-10:]]
 #%%
-# Choose CMCSA: ['PG', 'FISV', 'ALL', 'IEX', 'CBRE', 'AMZN', 'BLK', 'CMA', 'HES', 'JCI']
+# Choose CMCSA: ['PG', 'FISV', 'ALL', 'IEX', 'CBRE', 'AMZN', 
+# 'BLK', 'CMA', 'HES', 'JCI']
 #%%
 
 from PIL import Image

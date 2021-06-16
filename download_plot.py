@@ -47,6 +47,8 @@ for stock in tqdm(stocks):
         plt.grid()
         plt.xticks(rotation=45)
         plt.plot(pd.to_datetime(df['Date']), df['Close'])
+        plt.plot(pd.to_datetime(df['Date']), df['Open'])
+        # plt.plot(pd.to_datetime(df['Date']), df['Open'])
         # fig.autofmt_xdate()
         plt.title(f'{stock}')
         plt.xlabel("Date")
