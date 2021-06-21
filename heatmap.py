@@ -10,7 +10,6 @@ from tqdm import tqdm
 import yfinance as yf 
 import statsmodels.tsa.stattools as ts 
 
-
 #%%
 with open('examinating.txt', 'r') as f:
     list_stocks = f.read().split(', ')[:-1]
@@ -120,8 +119,8 @@ plt.savefig('coint50.jpg', dpi=300)
 # test = cointegration[9, :] # CMCSA
 # [list_stocks[i] for i in test.argsort()[-10:]]
 #%%
-# Choose CMCSA: ['PG', 'FISV', 'ALL', 'IEX', 'CBRE', 'AMZN', 
-# 'BLK', 'CMA', 'HES', 'JCI']
+# Choose CMCSA: ['LNT', 'DIS', 'KMX', 'DTE', 
+# 'EXR', 'EFX', 'ZBH', 'JNJ', 'PEP', 'DUK']
 #%%
 
 from PIL import Image
